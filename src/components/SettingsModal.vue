@@ -34,6 +34,7 @@ export default {
   },
   methods: {
     save() {
+      if (this.scrambleNumber <= 0) this.scrambleNumber = 1;
       Cookie.set('scrambleMoves', this.scrambleNumber);
       this.emitClose();
     },
