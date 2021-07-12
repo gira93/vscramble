@@ -6,33 +6,35 @@ const generateRandInt = (max) => (
   Math.floor(Math.random() * max) // Minimum is 0 max is not included
 );
 
-const generateScramble = (scrambleLength) => {
-  const scrambleBase = Array(scrambleLength).fill(0);
-
-  return scrambleBase.map(() => generateRandInt(BASE_MOVES.length));
-};
-
-const checkScrambleCorrect = (scramble) => (
-  scramble.every((s, index) => scramble[index + 1] !== s)
+const pickRand = (iterable) => (
+  iterable[generateRandInt(iterable.length)]
 );
 
-const translateAndModScramble = (scramble) => (
-  scramble.map((moveIndex) => {
-    const move = BASE_MOVES[moveIndex];
-    return `${move}${MODIFIERS[generateRandInt(MODIFIERS.length)]}`;
-  })
+const generateScramble = (scrambleLength) => {
+  const scramble = Array(scrambleLength).fill(0);
+  let exclusionList = [];
+
+  return scramble.map(() => {
+    const possibleMoves = BASE_MOVES.filter((m) => !exclusionList.includes(m));
+    const scrambleMove = pickRand(possibleMoves);
+
+    if (exclusionList.length === 2) {
+      exclusionList = exclusionList.slice(1);
+    }
+    exclusionList.push(scrambleMove);
+    return scrambleMove;
+  });
+};
+
+const addModsToScramble = (scramble) => (
+  scramble.map((move) => (
+    `${move}${pickRand(MODIFIERS)}`
+  ))
 );
 
 export default {
   getScramble: (scrambleLength = DEFAULT_SCRAMBLE_LENGTH) => {
-    let scramble;
-    let scrambleCorrect = false; // used to start the while loop
-
-    while (scrambleCorrect === false) {
-      scramble = generateScramble(scrambleLength);
-      scrambleCorrect = checkScrambleCorrect(scramble);
-    }
-
-    return translateAndModScramble(scramble);
+    const scramble = generateScramble(scrambleLength);
+    return addModsToScramble(scramble);
   },
 };
